@@ -21,9 +21,9 @@ add_executable(${PROJECT_NAME}-selftest
 
 add_library(${PROJECT_NAME} src/runit.h src/runit.c)
 
-target_include_directories(runit_selftest PRIVATE src/)
+target_include_directories(${PROJECT_NAME}-selftest PRIVATE src/)
 if (NOT MSVC)
-    target_link_libraries(runit_selftest PRIVATE src/)
+    target_link_libraries(${PROJECT_NAME}-selftest PRIVATE src/)
 endif ()
 
 enable_testing()
