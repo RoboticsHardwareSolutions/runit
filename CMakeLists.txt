@@ -19,6 +19,8 @@ add_executable(runit_selftest
         src/runit.c
         tst/selftest.c)
 
+add_library(runit SHARED src/runit.h src/runit.c)
+
 target_include_directories(runit_selftest PRIVATE src/)
 if (NOT MSVC)
     target_link_libraries(runit_selftest PRIVATE m)
