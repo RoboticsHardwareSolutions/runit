@@ -1,0 +1,11 @@
+# Doxygen build
+docs/
+html/
+latex/
+
+# Cmake build
+cmake-build-*/
+build*/
+
+# CLion
+.idea/
