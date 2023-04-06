@@ -14,20 +14,20 @@ include(compiler_flags.cmake)
 # -----------------------------------------------------------------------------
 # Build targets
 # -----------------------------------------------------------------------------
-add_executable(runit_selftest
+add_executable(${PROJECT_NAME}-selftest
         src/runit.h
         src/runit.c
         tst/selftest.c)
 
-add_library(runit SHARED src/runit.h src/runit.c)
+add_library(${PROJECT_NAME} src/runit.h src/runit.c)
 
 target_include_directories(runit_selftest PRIVATE src/)
 if (NOT MSVC)
-    target_link_libraries(runit_selftest PRIVATE m)
+    target_link_libraries(runit_selftest PRIVATE src/)
 endif ()
 
 enable_testing()
-add_test(NAME runit_selftest COMMAND runit_selftest)
+add_test(NAME ${PROJECT_NAME}-selftest COMMAND ${PROJECT_NAME}-selftest)
 
 # Doxygen documentation builder
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
