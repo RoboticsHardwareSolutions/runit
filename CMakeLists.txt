@@ -20,8 +20,9 @@ target_include_directories(${PROJECT_NAME}
 
 
 add_executable(${PROJECT_NAME}-selftest
-        src/runit.c
         tst/selftest.c)
+
+target_link_libraries(runit-selftest PRIVATE runit)
 
 target_include_directories(${PROJECT_NAME}-selftest
         PUBLIC
