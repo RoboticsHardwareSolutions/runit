@@ -18,17 +18,20 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         )
 
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES Generic)
+        add_executable(${PROJECT_NAME}-selftest
+                tst/selftest.c)
 
-add_executable(${PROJECT_NAME}-selftest
-        tst/selftest.c)
 
-target_link_libraries(runit-selftest PRIVATE runit)
+        target_link_libraries(runit-selftest PRIVATE runit)
 
-target_include_directories(${PROJECT_NAME}-selftest
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        target_include_directories(${PROJECT_NAME}-selftest
+                PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         )
 
-enable_testing()
-add_test(NAME ${PROJECT_NAME}-selftest COMMAND ${PROJECT_NAME}-selftest)
+        enable_testing()
+        add_test(NAME ${PROJECT_NAME}-selftest COMMAND ${PROJECT_NAME}-selftest)
+endif ()
+
 
