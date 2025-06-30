@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 project(runit
-        VERSION 1.4.0
+        VERSION 1.5.0
         LANGUAGES C
         DESCRIPTION
         "The C test framework")

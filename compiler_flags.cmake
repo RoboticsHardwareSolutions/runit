@@ -3,6 +3,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 message(STATUS "C compiler ID: ${CMAKE_C_COMPILER_ID}")
 
+set(RUNIT_FOUND ON)
+
 if (MSVC)
     message(STATUS "Using compiler flags for MSVC")
     # Options specific for the Microsoft Visual C++ compiler CL

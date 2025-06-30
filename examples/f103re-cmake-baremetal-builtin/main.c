@@ -8,11 +8,6 @@ void                     SysTick_Handler(void)
     s_ticks++;
 }
 
-uint64_t mg_millis(void)
-{                    // Let Mongoose use our uptime function
-    return s_ticks;  // Return number of milliseconds since boot
-}
-
 static void test_initially_no_test_have_failed(void)
 {
     runit_eq(runit_at_least_one_fail, 0);
