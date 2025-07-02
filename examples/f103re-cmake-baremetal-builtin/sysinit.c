@@ -2,14 +2,17 @@
 
 #define SYS_FREQUENCY 72000000
 
+uint32_t      SystemCoreClock    = SYS_FREQUENCY;
+const uint8_t AHBPrescTable[16U] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t APBPrescTable[8U]  = {0, 0, 0, 0, 1, 2, 3, 4};
+
 void spin(volatile uint32_t count)
 {
     while (count--)
         (void) 0;
 }
 
-uint32_t SystemCoreClock = SYS_FREQUENCY;
-void     SystemInit(void)
+void SystemInit(void)
 {
     // Enable FPU is not applicable for STM32F1 series (no FPU)
     // Reset RCC clock configuration to default reset state
@@ -41,8 +44,6 @@ void     SystemInit(void)
     RCC->CFGR |= RCC_CFGR_SW_PLL;
     while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL)
         spin(1);
-
-    SystemCoreClock = 72000000;  // Update core clock variable
 
     SysTick_Config(SystemCoreClock / 1000);  // Sys tick every 1ms
 }
