@@ -1,3 +1,4 @@
+################################ CrossCopiler ################################
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
 cmake_minimum_required(VERSION 3.28)
@@ -17,6 +18,22 @@ project(robocontroller C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
+################################ Compiler options ################################
+add_compile_definitions(ARM_MATH_CM3;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
+#add_compile_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
+#add_link_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
+add_link_options(-Wl,-gc-sections,--print-memory-usage)
+add_link_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
+add_link_options(-T ${CMAKE_SOURCE_DIR}/STM32F103RETX_FLASH.ld)
+
+#Uncomment for software floating point
+#add_compile_options(-mfloat-abi=soft)
+
+add_compile_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
+add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
+
+# uncomment to mitigate c++17 absolute addresses warnings
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     message(STATUS "Maximum optimization for speed")
@@ -35,29 +52,20 @@ else()
     message(STATUS "No optimization")
 endif()
 
-add_compile_definitions(ARM_MATH_CM3;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
-#add_compile_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
-#add_link_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
-add_link_options(-Wl,-gc-sections,--print-memory-usage)
-add_link_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
-add_link_options(-T ${CMAKE_SOURCE_DIR}/STM32F103RETX_FLASH.ld)
 
-#Uncomment for software floating point
-#add_compile_options(-mfloat-abi=soft)
+################################ Clone neccessary repos ################################
+set(FETCHCONTENT_QUIET FALSE) # To output process of FetchContent
 
-add_compile_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
-add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
-
-# uncomment to mitigate c++17 absolute addresses warnings
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include
+# CMSIS
+include(FetchContent)
+FetchContent_Declare(
+    cmsis
+    GIT_REPOSITORY https://github.com/ARM-software/CMSIS_5
+    GIT_TAG master
 )
+FetchContent_MakeAvailable(cmsis)
 
-set(FETCHCONTENT_QUIET FALSE)
-
+# RTT
 include(FetchContent)
 FetchContent_Declare(
     rtt
@@ -66,22 +74,27 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(rtt)
 
+################################ Create RTT Lib ################################
 add_library(rtt STATIC
-        ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT_ASM_ARMv7M.S
-        ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT_printf.c
-        ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT.c
+    ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT_ASM_ARMv7M.S
+    ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT_printf.c
+    ${rtt_SOURCE_DIR}/RTT/SEGGER_RTT.c
 )
-
 target_include_directories(rtt
-        PUBLIC
-        $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/RTT>
-        $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/Config>
+    PUBLIC
+    $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/RTT>
+    $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/Config>
 )
 
+################################ Include Source Dir and cmsis includes ################################
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${cmsis_SOURCE_DIR}/CMSIS/Core/Include
+)
+
+################################ Add RUINT ################################
 add_subdirectory(../../../runit "${CMAKE_CURRENT_BINARY_DIR}/runit")
 
-add_definitions(-DSTM32F103xE)
-
+################################ Create Target ################################
 add_executable(${PROJECT_NAME}.elf "main.c" "syscalls.c" "sysinit.c" "startup_stm32f103xe.s" "STM32F103RETX_FLASH.ld")
-
 target_link_libraries(${PROJECT_NAME}.elf PUBLIC rtt runit)
