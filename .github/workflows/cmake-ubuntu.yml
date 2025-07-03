@@ -1,0 +1,32 @@
+name: CMake Ubuntu CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install CMake and tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+
+      - name: Configure project
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Build project
+        run: |
+          cd build
+          cmake --build .
+
+      - name: Start self-tests
+        run: |
+          cd build
+          cmake --build . --target runit-selftest
