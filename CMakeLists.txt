@@ -22,14 +22,9 @@ target_include_directories(
 )
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Generic")
-        add_executable(${PROJECT_NAME}-selftest
-                src/runit.h
-                src/runit.c
-                tst/selftest.c)
-        target_include_directories(${PROJECT_NAME}-selftest PRIVATE src/)
-        if(NOT MSVC)
-                target_link_libraries(${PROJECT_NAME}-selftest PRIVATE src/)
-        endif()
+        add_executable(${PROJECT_NAME}-selftest tst/selftest.c)
+        target_link_libraries(${PROJECT_NAME}-selftest PRIVATE runit)
+
         enable_testing()
         add_test(NAME ${PROJECT_NAME}-selftest COMMAND ${PROJECT_NAME}-selftest)
 endif()

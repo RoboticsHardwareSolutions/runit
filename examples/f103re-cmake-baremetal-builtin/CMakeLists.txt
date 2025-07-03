@@ -14,7 +14,7 @@ set(SIZE arm-none-eabi-size)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # project settings
-project(robocontroller C CXX ASM)
+project(example_f103re C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
@@ -53,7 +53,7 @@ else()
 endif()
 
 
-################################ Clone neccessary repos ################################
+################################ Clone neccessary dependencies ################################
 set(FETCHCONTENT_QUIET FALSE) # To output process of FetchContent
 
 # CMSIS
@@ -66,6 +66,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cmsis)
 
 # RTT
+# The RTT library is used for debugging output.
 include(FetchContent)
 FetchContent_Declare(
     rtt
@@ -85,6 +86,8 @@ target_include_directories(rtt
     $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/RTT>
     $<BUILD_INTERFACE:${rtt_SOURCE_DIR}/Config>
 )
+# Buffer size needs to be set to 16384 to avoid overflow in output. There is a lot of output in this example.
+target_compile_definitions(rtt PUBLIC -DBUFFER_SIZE_UP=16384)
 
 ################################ Include Source Dir and cmsis includes ################################
 include_directories(
@@ -98,3 +101,13 @@ add_subdirectory(../../../runit "${CMAKE_CURRENT_BINARY_DIR}/runit")
 ################################ Create Target ################################
 add_executable(${PROJECT_NAME}.elf "main.c" "syscalls.c" "sysinit.c" "startup_stm32f103xe.s" "STM32F103RETX_FLASH.ld")
 target_link_libraries(${PROJECT_NAME}.elf PUBLIC rtt runit)
+
+################################ Binary files ################################
+set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
+set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
+
+add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
+        COMMENT "Building ${HEX_FILE}
+Building ${BIN_FILE}")
