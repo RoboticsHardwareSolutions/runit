@@ -39,7 +39,7 @@ extern char runit_at_least_one_fail;
  * during different launches of the test suite.
  */
 
-extern size_t runit_counter_assert_failures;
+extern unsigned int runit_counter_assert_failures;
 
 /**
  * Counter of all runit assertion macro calls that passed the check.
@@ -48,7 +48,7 @@ extern size_t runit_counter_assert_failures;
  * Useful to inspect the amount of passes for changes
  * during different launches of the test suite.
  */
-extern size_t runit_counter_assert_passes;
+extern unsigned int runit_counter_assert_passes;
 
 /**
  * Absolute tolerance when comparing two single-precision floating point
@@ -81,7 +81,7 @@ extern size_t runit_counter_assert_passes;
  */
 #define runit_report() \
     printf("REPORT | File: %s:%d | Test case: %s" \
-           " | Passes: %5zu | Failures: %5zu\n", \
+           " | Passes: %5u | Failures: %5u\n", \
            __FILE__, __LINE__, __func__,          \
            runit_counter_assert_passes, runit_counter_assert_failures)
 
