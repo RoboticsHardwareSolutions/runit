@@ -500,13 +500,14 @@ static void start_self_tests(void)
 int main(void)
 {
     start_self_tests();
-    for (;;)
-    {
-    }
+    
     if (expected_failures_counter != runit_counter_assert_failures)
         printf("Expected %u failures, but got %u\n", expected_failures_counter, runit_counter_assert_failures);
     else
         printf("All tests passed successfully!\n");
 
+    for (;;)
+    {
+    }
     return 0;
 }
