@@ -25,31 +25,32 @@ def run_tests_by_rtt(jlink: JLink, duration: float = 0.0) -> None:
             if response:
                 resp_text = remove_ansi_colors(bytes(response).decode("utf-8", errors="ignore"))
                 # Extract report info
-                match = re.search(
-                    r'REPORT\s*\|\s*File:\s*(.*?)\s*\|\s*Test case:\s*(.*?)\s*\|\s*Passes:\s*(\d+)\s*\|\s*Failures:\s*(\d+)',
-                    resp_text
-                )
-                if match:
-                    file_path = match.group(1)
-                    test_case = match.group(2)
-                    passed = match.group(3)
-                    failed = match.group(4)
-                    print(f"Test result: {passed} passed, {failed} failed (File: {file_path}, Test case: {test_case})")
-                    if failed != '0':
-                        has_error = True
-                elif "All tests passed successfully!" in resp_text:
-                    has_error = False
-                    print("All tests passed successfully!")
-                else:
-                    exp_fail_match = re.search(r"Expected (\d+) failures, but got (\d+)", resp_text)
-                    if exp_fail_match:
-                        expected = exp_fail_match.group(1)
-                        got = exp_fail_match.group(2)
-                        print(f"Expected {expected} failures, but got {got}")
-                        has_error = True
+                for line in resp_text.splitlines():
+                    match = re.search(
+                        r'REPORT\s*\|\s*File:\s*(.*?)\s*\|\s*Test case:\s*(.*?)\s*\|\s*Passes:\s*(\d+)\s*\|\s*Failures:\s*(\d+)',
+                        line
+                    )
+                    if match:
+                        file_path = match.group(1)
+                        test_case = match.group(2)
+                        passed = match.group(3)
+                        failed = match.group(4)
+                        print(f"Test result: {passed} passed, {failed} failed (File: {file_path}, Test case: {test_case})")
+                        if failed != '0':
+                            has_error = True
+                    elif "All tests passed successfully!" in line:
+                        has_error = False
+                        print("All tests passed successfully!")
                     else:
-                        print(f"::error::Output:\n{resp_text}")
-                        has_error = True
+                        exp_fail_match = re.search(r"Expected (\d+) failures, but got (\d+)", line)
+                        if exp_fail_match:
+                            expected = exp_fail_match.group(1)
+                            got = exp_fail_match.group(2)
+                            print(f"Expected {expected} failures, but got {got}")
+                            has_error = True
+                        elif line.strip():
+                            print(f"::error::Output:\n{line}")
+                            has_error = True
 
     except Exception as e:
         print(f"Error RTT: {e}")
