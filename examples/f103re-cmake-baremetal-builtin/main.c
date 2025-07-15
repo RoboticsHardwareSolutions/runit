@@ -503,6 +503,10 @@ int main(void)
     for (;;)
     {
     }
+    if (expected_failures_counter != runit_counter_assert_failures)
+        printf("Expected %u failures, but got %u\n", expected_failures_counter, runit_counter_assert_failures);
+    else
+        printf("All tests passed successfully!\n");
 
     return 0;
 }
