@@ -1,0 +1,40 @@
+name: Build Runit Selftest
+
+on: [pull_request]
+
+jobs:
+  linux_build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure and Build project
+        run: |
+          cmake -S . -B build
+          cmake --build build
+
+      - name: Run selftest
+        run: ./build/runit-selftest
+
+  stm32f103re_build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Configure and Build project
+        run: |
+          cmake -S examples/f103re-cmake-baremetal-builtin -B examples/f103re-cmake-baremetal-builtin/build
+          cmake --build examples/f103re-cmake-baremetal-builtin/build
+
+      - name: Flash firmware
+        run: |
+          python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
+
+      - name: Unit tests
+        run: |
+          python3 .github/scripts/units.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE
