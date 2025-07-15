@@ -4,50 +4,37 @@ on: [pull_request]
 
 jobs:
   linux_build:
-    runs-on: [self-hosted]
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configure project
+      - name: Configure and Build project
         run: |
-          mkdir build
-          cd build
-          cmake ..
+          cmake -S . -B build
+          cmake --build build
 
-      - name: Build project
-        run: |
-          cd build
-          cmake --build .
-          ./runit-selftest
+      - name: Run selftest
+        run: ./build/runit-selftest
 
   stm32f103re_build:
-    runs-on: [self-hosted]
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
           fetch-depth: 1
 
-      - name: Configure project
+      - name: Configure and Build project
         run: |
-          cd examples/f103re-cmake-baremetal-builtin
-          mkdir build
-          cd build
-          cmake ..
-
-      - name: Build project
-        run: |
-          cd examples/f103re-cmake-baremetal-builtin/build
-          cmake --build .
+          cmake -S examples/f103re-cmake-baremetal-builtin -B examples/f103re-cmake-baremetal-builtin/build
+          cmake --build examples/f103re-cmake-baremetal-builtin/build
 
       - name: Flash firmware
         run: |
-            python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
+          python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
 
       - name: Unit tests
         run: |
-            python3 .github/scripts/units.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE
+          python3 .github/scripts/units.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE
