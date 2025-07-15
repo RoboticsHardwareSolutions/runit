@@ -1,6 +1,6 @@
 name: Build Runit Selftest
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   linux_build:
@@ -46,7 +46,7 @@ jobs:
 
       - name: Flash firmware
         run: |
-            python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE build/example_f103re.bin
+            python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
 
       - name: Unit tests
         run: |
