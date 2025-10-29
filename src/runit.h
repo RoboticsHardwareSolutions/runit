@@ -82,10 +82,17 @@ extern unsigned int runit_counter_assert_passes;
 #define runit_report() \
     printf("REPORT | File: %s:%d | Test case: %s" \
            " | Passes: %5u | Failures: %5u\n", \
-           __FILE__, __LINE__, __func__,          \
+           RUNIT_FILENAME, __LINE__, __func__,     \
            runit_counter_assert_passes, runit_counter_assert_failures)
 
 /**
+ * Extract only filename from full path (handles both Unix and Windows paths)
+ */
+#define RUNIT_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : \
+                        (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
+
+/**
+ * 
  * Verifies if the given boolean expression is true.
  *
  * Otherwise stops the test case immediately and reports the failing file,
@@ -110,7 +117,7 @@ extern unsigned int runit_counter_assert_passes;
 #define runit_assert(expression) do {                   \
     if (!(expression)) {                               \
         printf("FAIL | File: %s:%d | Test case: %s\n", \
-               __FILE__, __LINE__, __func__);          \
+               RUNIT_FILENAME, __LINE__, __func__);    \
         runit_counter_assert_failures++;                \
         runit_at_least_one_fail = 1;                    \
         return;                                        \
