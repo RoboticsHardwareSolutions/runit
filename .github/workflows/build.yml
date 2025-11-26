@@ -33,8 +33,37 @@ jobs:
 
       - name: Flash firmware
         run: |
-          python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install rhs-flashkit
+          rhs-flash examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin --serial ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }}
 
       - name: Unit tests
         run: |
-          python3 .github/scripts/units.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE
+          source .venv/bin/activate
+          pip install rhs-flashkit
+          
+          HAS_FAILURES=0
+          
+          REPORT_LINES=$(echo "$TEST_OUTPUT" | grep "REPORT")
+          if [ -n "$REPORT_LINES" ]; then
+          HAS_REPORT_FAILURES=0
+          while IFS= read -r line; do
+            FAILURES=$(echo "$line" | grep -oP "Failures:\s*\K\d+" || echo "0")
+            if [ "$FAILURES" -ne 0 ]; then
+            echo "❌ Test FAILED: $line"
+            HAS_REPORT_FAILURES=1
+            else
+            echo "✅ Test PASSED: $line"
+            fi
+          done <<< "$REPORT_LINES"
+          if [ "$HAS_REPORT_FAILURES" -ne 0 ]; then
+            HAS_FAILURES=1
+          fi
+          else
+          echo "❌ Test FAILED: No REPORT found"
+          HAS_FAILURES=1
+          fi
+          echo "---"
+          
+          exit $HAS_FAILURES
