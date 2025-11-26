@@ -47,23 +47,16 @@ jobs:
           
           TEST_OUTPUT=$(rhs-jlink-rtt --serial ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} 2>&1)
           
+          # Check that at least one REPORT line exists
           REPORT_LINES=$(echo "$TEST_OUTPUT" | grep "REPORT")
-          if [ -n "$REPORT_LINES" ]; then
-          HAS_REPORT_FAILURES=0
-          while IFS= read -r line; do
-            FAILURES=$(echo "$line" | grep -oP "Failures:\s*\K\d+" || echo "0")
-            if [ "$FAILURES" -ne 0 ]; then
-            echo "❌ Test FAILED: $line"
-            HAS_REPORT_FAILURES=1
-            else
-            echo "✅ Test PASSED: $line"
-            fi
-          done <<< "$REPORT_LINES"
-          if [ "$HAS_REPORT_FAILURES" -ne 0 ]; then
-            HAS_FAILURES=1
-          fi
-          else
+          if [ -z "$REPORT_LINES" ]; then
           echo "❌ Test FAILED: No REPORT found"
+          HAS_FAILURES=1
+          fi
+
+          # Check for success message
+          if ! echo "$TEST_OUTPUT" | grep -q "All tests passed successfully!"; then
+          echo "❌ Test FAILED: 'All tests passed successfully!' not found"
           HAS_FAILURES=1
           fi
           echo "---"
