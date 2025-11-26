@@ -61,7 +61,7 @@ include(FetchContent)
 FetchContent_Declare(
     cmsis
     GIT_REPOSITORY https://github.com/ARM-software/CMSIS_5
-    GIT_TAG master
+    GIT_TAG 5.9.0
 )
 FetchContent_MakeAvailable(cmsis)
 
