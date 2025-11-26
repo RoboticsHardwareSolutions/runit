@@ -63,7 +63,8 @@ jobs:
           if ! echo "$TEST_OUTPUT" | grep -q "All tests passed successfully!"; then
           echo "❌ Test FAILED: 'All tests passed successfully!' not found"
           HAS_FAILURES=1
+          else
+          echo "✅ 'All tests passed successfully!' found. Note: These tests include intentional failure cases for selftests, so seeing this message is expected."
           fi
-          echo "---"
           
           exit $HAS_FAILURES
