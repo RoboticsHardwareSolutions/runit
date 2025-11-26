@@ -54,6 +54,11 @@ jobs:
           HAS_FAILURES=1
           fi
 
+          # Print all test output
+          echo "===== FULL TEST OUTPUT ====="
+          echo "$TEST_OUTPUT"
+          echo "==========================="
+
           # Check for success message
           if ! echo "$TEST_OUTPUT" | grep -q "All tests passed successfully!"; then
           echo "❌ Test FAILED: 'All tests passed successfully!' not found"
