@@ -45,6 +45,8 @@ jobs:
           
           HAS_FAILURES=0
           
+          TEST_OUTPUT=$(rhs-jlink-rtt --serial ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} 2>&1)
+          
           REPORT_LINES=$(echo "$TEST_OUTPUT" | grep "REPORT")
           if [ -n "$REPORT_LINES" ]; then
           HAS_REPORT_FAILURES=0
