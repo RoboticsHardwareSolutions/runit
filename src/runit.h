@@ -8,8 +8,7 @@
 #define RUNIT_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /**
@@ -68,7 +67,6 @@ extern unsigned int runit_counter_assert_passes;
  */
 #define RUNIT_DOUBLE_EQ_ABSTOL (1e-8)
 
-
 /**
  * Prints a brief report message providing the point where this report is
  * and the amount of successes and failures at this point.
@@ -79,20 +77,27 @@ extern unsigned int runit_counter_assert_passes;
  * multiple of these reports may be added to aid debugging in understanding
  * where the issue arisees.
  */
-#define runit_report() \
+#define runit_report()                            \
     printf("REPORT | File: %s:%d | Test case: %s" \
-           " | Passes: %5u | Failures: %5u\n", \
-           RUNIT_FILENAME, __LINE__, __func__,     \
-           runit_counter_assert_passes, runit_counter_assert_failures)
+           " | Passes: %5u | Failures: %5u\n",    \
+           RUNIT_FILENAME,                        \
+           __LINE__,                              \
+           __func__,                              \
+           runit_counter_assert_passes,           \
+           runit_counter_assert_failures)
 
 /**
  * Extract only filename from full path (handles both Unix and Windows paths)
  */
-#define RUNIT_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : \
-                        (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
-
+#if defined(RUNIT_NO_FULL_PATH)
+#    define RUNIT_FILENAME                                   \
+        (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 \
+                                : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
+#else
+#    define RUNIT_FILENAME (__FILE__)
+#endif
 /**
- * 
+ *
  * Verifies if the given boolean expression is true.
  *
  * Otherwise stops the test case immediately and reports the failing file,
@@ -114,17 +119,21 @@ extern unsigned int runit_counter_assert_passes;
  * runit_assert(3 < 1);  // Fails
  * ```
  */
-#define runit_assert(expression) do {                   \
-    if (!(expression)) {                               \
-        printf("FAIL | File: %s:%d | Test case: %s\n", \
-               RUNIT_FILENAME, __LINE__, __func__);    \
-        runit_counter_assert_failures++;                \
-        runit_at_least_one_fail = 1;                    \
-        return;                                        \
-    } else {                                           \
-        runit_counter_assert_passes++;                  \
-    }                                                  \
-} while (0)
+#define runit_assert(expression)                                                                \
+    do                                                                                          \
+    {                                                                                           \
+        if (!(expression))                                                                      \
+        {                                                                                       \
+            printf("FAIL | File: %s:%d | Test case: %s\n", RUNIT_FILENAME, __LINE__, __func__); \
+            runit_counter_assert_failures++;                                                    \
+            runit_at_least_one_fail = 1;                                                        \
+            return;                                                                             \
+        }                                                                                       \
+        else                                                                                    \
+        {                                                                                       \
+            runit_counter_assert_passes++;                                                      \
+        }                                                                                       \
+    } while (0)
 
 /**
  * Verifies if the given boolean expression is true.
@@ -285,8 +294,7 @@ extern unsigned int runit_counter_assert_passes;
  * runit_ddelta(1.0, 2.0, 0.1);         // Fails
  * ```
  */
-#define runit_ddelta(a, b, delta) \
-    runit_assert(fabs((a) - (b)) <= fabs(delta))
+#define runit_ddelta(a, b, delta) runit_assert(fabs((a) - (b)) <= fabs(delta))
 
 /**
  * Verifies if two double-precision floating point values are within a fixed
@@ -429,7 +437,7 @@ extern unsigned int runit_counter_assert_passes;
  * runit_noflag(0x07, 0xF8);    // Passes
  * runit_noflag(0x07, 0x04);    // Fails
  * ```
-*/
+ */
 #define runit_noflag(value, mask) runit_assert(((value) & (mask)) == 0)
 
 /**
@@ -446,8 +454,7 @@ extern unsigned int runit_counter_assert_passes;
  * runit_streq("abcd", "ABCD", 4);    // Fails, different casing
  * ```
  */
-#define runit_streq(a, b, maxlen) \
-    runit_assert(strncmp((a), (b), (maxlen)) == 0)
+#define runit_streq(a, b, maxlen) runit_assert(strncmp((a), (b), (maxlen)) == 0)
 
 /**
  * Verifies if two memory sections are equal up to a given length.
@@ -476,7 +483,7 @@ extern unsigned int runit_counter_assert_passes;
  * runit_memneq("abcd", "abcd", 100);  // UNDEFINED as exceeding known memory
  * runit_memneq("abcd", "abCD", 4);    // Passes
  * ```
-*/
+ */
 #define runit_memneq(a, b, len) runit_assert(memcmp((a), (b), len) != 0)
 
 /**
@@ -494,11 +501,15 @@ extern unsigned int runit_counter_assert_passes;
  * runit_zeros("\0\0\0\0", 4);    // Passes
  * runit_zeros("\0\0\0\0", 100);  // UNDEFINED as exceeding known memory
  * ```
-*/
-#define runit_zeros(x, len) do { \
-        for (size_t __runit_idx = 0; __runit_idx < (size_t)(len); __runit_idx++) \
-        { runit_eq(((uint8_t*)(x))[__runit_idx], 0); } \
-    } while(0)
+ */
+#define runit_zeros(x, len)                                                       \
+    do                                                                            \
+    {                                                                             \
+        for (size_t __runit_idx = 0; __runit_idx < (size_t) (len); __runit_idx++) \
+        {                                                                         \
+            runit_eq(((uint8_t*) (x))[__runit_idx], 0);                           \
+        }                                                                         \
+    } while (0)
 
 /**
  * Verifies if a memory section is not completely filled with zeros
@@ -520,15 +531,21 @@ extern unsigned int runit_counter_assert_passes;
  * runit_nzeros("a\0c\0", 3);      // Passes
  * runit_nzeros("\0\0\0\0", 100);  // UNDEFINED as exceeding known memory
  * ```
-*/
-#define runit_nzeros(x, len) do { \
-        uint8_t __runit_all_zero = 1; \
-        for (size_t __runit_idx = 0; __runit_idx < (size_t)(len); __runit_idx++) \
-        { if(((uint8_t*)(x))[__runit_idx] != 0) \
-            { __runit_all_zero = 0; break; } \
-        } \
-        runit_false(__runit_all_zero); \
-    } while(0)
+ */
+#define runit_nzeros(x, len)                                                      \
+    do                                                                            \
+    {                                                                             \
+        uint8_t __runit_all_zero = 1;                                             \
+        for (size_t __runit_idx = 0; __runit_idx < (size_t) (len); __runit_idx++) \
+        {                                                                         \
+            if (((uint8_t*) (x))[__runit_idx] != 0)                               \
+            {                                                                     \
+                __runit_all_zero = 0;                                             \
+                break;                                                            \
+            }                                                                     \
+        }                                                                         \
+        runit_false(__runit_all_zero);                                            \
+    } while (0)
 
 /**
  * Forces a failure of the test case, stopping it and reporting on standard
@@ -540,4 +557,4 @@ extern unsigned int runit_counter_assert_passes;
 }
 #endif
 
-#endif  /* RUNIT_H */
+#endif /* RUNIT_H */

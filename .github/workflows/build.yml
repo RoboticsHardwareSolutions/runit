@@ -1,6 +1,10 @@
 name: Build Runit Selftest
 
-on: [pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   linux_build:
@@ -33,8 +37,38 @@ jobs:
 
       - name: Flash firmware
         run: |
-          python3 .github/scripts/flashing.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install bmlab-toolkit
+          bmlab-flash examples/f103re-cmake-baremetal-builtin/build/example_f103re.bin --serial ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }}
 
       - name: Unit tests
         run: |
-          python3 .github/scripts/units.py ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} STM32F103RE
+          source .venv/bin/activate
+          pip install bmlab-toolkit
+          
+          HAS_FAILURES=0
+          
+          TEST_OUTPUT=$(bmlab-jlink-rtt --serial ${{ secrets.JLINK_SERIAL_CI_STM32F103RE }} 2>&1)
+          
+          # Check that at least one REPORT line exists
+          REPORT_LINES=$(echo "$TEST_OUTPUT" | grep "REPORT")
+          if [ -z "$REPORT_LINES" ]; then
+          echo "❌ Test FAILED: No REPORT found"
+          HAS_FAILURES=1
+          fi
+
+          # Print all test output
+          echo "===== FULL TEST OUTPUT ====="
+          echo "$TEST_OUTPUT"
+          echo "==========================="
+
+          # Check for success message
+          if ! echo "$TEST_OUTPUT" | grep -q "All tests passed successfully!"; then
+          echo "❌ Test FAILED: 'All tests passed successfully!' not found"
+          HAS_FAILURES=1
+          else
+          echo "✅ 'All tests passed successfully!' found. Note: These tests include intentional failure cases for selftests, so seeing this message is expected."
+          fi
+          
+          exit $HAS_FAILURES

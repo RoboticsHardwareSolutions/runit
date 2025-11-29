@@ -55,23 +55,22 @@ endif()
 
 ################################ Clone neccessary dependencies ################################
 set(FETCHCONTENT_QUIET FALSE) # To output process of FetchContent
+include(FetchContent)
 
 # CMSIS
-include(FetchContent)
 FetchContent_Declare(
     cmsis
     GIT_REPOSITORY https://github.com/ARM-software/CMSIS_5
-    GIT_TAG master
+    GIT_TAG 5.9.0
 )
 FetchContent_MakeAvailable(cmsis)
 
 # RTT
 # The RTT library is used for debugging output.
-include(FetchContent)
 FetchContent_Declare(
     rtt
     GIT_REPOSITORY https://github.com/SEGGERMicro/RTT.git
-    GIT_TAG master
+    GIT_TAG main
 )
 FetchContent_MakeAvailable(rtt)
 
