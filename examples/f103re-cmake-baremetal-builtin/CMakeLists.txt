@@ -57,13 +57,23 @@ endif()
 set(FETCHCONTENT_QUIET FALSE) # To output process of FetchContent
 include(FetchContent)
 
-# CMSIS
-FetchContent_Declare(
-    cmsis
-    GIT_REPOSITORY https://github.com/ARM-software/CMSIS_5
-    GIT_TAG 5.9.0
+# CMSIS - Download required headers
+set(CMSIS_BASE_URL "https://raw.githubusercontent.com/ARM-software/CMSIS_5/5.9.0/CMSIS/Core/Include")
+set(CMSIS_HEADERS
+  "core_cm3.h"
+  "cmsis_version.h"
+  "cmsis_compiler.h"
+  "cmsis_gcc.h"
 )
-FetchContent_MakeAvailable(cmsis)
+
+foreach(HEADER ${CMSIS_HEADERS})
+  file(DOWNLOAD
+    "${CMSIS_BASE_URL}/${HEADER}"
+    "${CMAKE_BINARY_DIR}/cmsis/${HEADER}"
+  )
+endforeach()
+
+include_directories(${CMAKE_BINARY_DIR}/cmsis)
 
 # RTT
 # The RTT library is used for debugging output.
@@ -91,7 +101,6 @@ target_compile_definitions(rtt PUBLIC -DBUFFER_SIZE_UP=16384)
 ################################ Include Source Dir and cmsis includes ################################
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${cmsis_SOURCE_DIR}/CMSIS/Core/Include
 )
 
 ################################ Add RUINT ################################
