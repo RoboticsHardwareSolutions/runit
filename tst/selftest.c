@@ -9,9 +9,9 @@
 
 static size_t expected_failures_counter = 0;
 
-#define SHOULD_FAIL(failing) \
+#define SHOULD_FAIL(failing)      \
     printf("Expected failure: "); \
-    expected_failures_counter++; \
+    expected_failures_counter++;  \
     failing
 
 static void test_initially_no_test_have_failed(void)
@@ -348,7 +348,7 @@ static void test_streq(void)
     runit_streq(a, b, 4);
     runit_streq(a, b, 5);
     runit_eq(a[5], b[5]);
-    runit_streq(a, b, 6); // Null terminator
+    runit_streq(a, b, 6);  // Null terminator
     runit_streq("", "", 0);
     SHOULD_FAIL(runit_streq(a, c, 5));
 }
@@ -390,8 +390,8 @@ static void test_memneq(void)
 
 static void test_zeros(void)
 {
-    const uint8_t a[] = {0, 0, 0, 0, 0};
-    const uint8_t b[] = {0, 0, 255, 255, 255};
+    const uint8_t  a[] = {0, 0, 0, 0, 0};
+    const uint8_t  b[] = {0, 0, 255, 255, 255};
     const uint32_t d[] = {0, 0, 0};
 
     runit_zeros(a, 0U);
