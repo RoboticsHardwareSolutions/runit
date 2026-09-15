@@ -22,22 +22,25 @@ endif ()
 
 
 #################### FORMAT SECTION #######################
-include(FetchContent)
-FetchContent_Declare(
-        rlibhelper
-        GIT_REPOSITORY https://github.com/RoboticsHardwareSolutions/rlibhelper.git
-        GIT_TAG main
-)
-FetchContent_MakeAvailable(rlibhelper)
-
 set(FILES_FOR_FORMATTING
         src/runit.c
         src/runit.h
         tst/selftest.c
 )
-if (EXISTS "${rlibhelper_SOURCE_DIR}/format.cmake")
-    include(${rlibhelper_SOURCE_DIR}/format.cmake)
-else ()
-    message(WARNING "format.cmake file not found")
+
+if (NOT TARGET rlibhelper)
+    include(FetchContent)
+    FetchContent_Declare(
+            rlibhelper
+            GIT_REPOSITORY https://github.com/RoboticsHardwareSolutions/rlibhelper.git
+            GIT_TAG main
+    )
+    FetchContent_MakeAvailable(rlibhelper)
 endif ()
+
+if(EXISTS "${rlibhelper_SOURCE_DIR}/format.cmake")
+    include(${rlibhelper_SOURCE_DIR}/format.cmake)
+else()
+    message(WARNING "format.cmake file not found")
+endif()
 format_files(${PROJECT_NAME} SOURCES ${FILES_FOR_FORMATTING})
